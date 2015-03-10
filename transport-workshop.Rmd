@@ -1,0 +1,110 @@
+---
+title: "Route Analysis using R and Google Maps"
+output: pdf_document
+---
+
+Open up R Studio (click **Start > All Programs > RStudio > RStudio** or double-click the icon on the desktop). 
+
+One of the libraries we will use is `ggmap`, which allows us to quickly and easily include some Google Maps within R. First, we need to load the library, so type into the console:
+
+```{r, comment=NA, message=FALSE, warning=FALSE}
+library(ggmap)
+```
+
+This will also load various other libraries and you will probably see information messages. We can then create a quick map of Leeds with the `qmap()` function. You should see the map appear in the 'Plots' window to the left of the R Studio window. 
+
+```{r, comment=NA, message = FALSE}
+qmap('Leeds')
+```
+
+We can also search for anything we would search for in the Google Maps search box - e.g. different locations, or postcodes. For example, try: 
+
+```{r, comment=NA, message = FALSE, eval=FALSE}
+qmap('L69 3BX')
+```
+
+Try different postcodes or locations to search for, and see what happens. You will see that the scale of the map stays the same - this is fine for Leeds, but of limited use for somewhere smaller (like Norwich) or larger (like Ireland). The default zoom is level 10, but we can change this to something more useful. Higher numbers zoom in more (i.e. show a smaller area). Try:
+
+```{r, comment=NA, message = FALSE}
+qmap('LS2 9JT', zoom = 17)
+```
+
+This shows us the map centred on the Parkinson building (although it isn't marked on the map). 
+
+As well as the maps layer, we can access the satellite and hybrid map types from Google Maps:
+
+```{r, comment=NA, message = FALSE, eval = FALSE}
+qmap('LS2 9JT', zoom = 17, maptype = 'satellite')
+```
+
+One useful shortcut when using R Studio (or R on its own) is that pressing the 'up' key on the keyboard will show your previous command. You can then edit this and press return to run it, which avoids the need to type the whole command out again! Try it with the command below:
+
+```{r, comment=NA, message = FALSE, eval=FALSE}
+qmap('LS2 9JT', zoom = 17, maptype = 'hybrid')
+```
+
+
+## Routing
+
+Just as you can get directions from the Google Maps website, you can also access the same tools through the API. The code below passes an origin and destination to the routing command and then shows the route on a map. Try running this code, and then try changing to origin and/or destination and try running it again. You may need to adjust the location of the map to show the whole route. 
+
+```{r, comment = NA, message = FALSE, warning=FALSE, echo = FALSE}
+from <- 'Leeds station, New Station Street, Leeds LS1 5DL, United Kingdom'
+to <- 'LS2 9JT'
+route_df <- route(from, to, structure = 'route', mode = 'walking')
+qmap('Merrion Centre', zoom = 15) +
+  geom_path(
+    aes(x = lon, y = lat),  colour = 'red', size = 1.5,
+    data = route_df, lineend = 'round')
+```
+
+With a bit of extra R code, we can create a data frame of different origin and destination pairs, and then write the code to get R to look through the API and produce a route for each of these. 
+
+First of all, add the code to get R to save the map as a PDF. Run this code, and R will save the map as a PDF file in your working folder. (Run `getwd()` if you are not sure where your working folder is).
+
+
+```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
+#save as PDF
+pdf(file="image.pdf")
+  from <- 'Leeds station, New Station Street, Leeds LS1 5DL, United Kingdom'
+  to <- 'LS2 9JT'
+  route_df <- route(from, to, structure = 'route', mode = 'walking')
+  qmap('Merrion Centre', zoom = 15) +
+    geom_path(
+      aes(x = lon, y = lat),  colour = 'red', size = 1.5,
+      data = route_df, lineend = 'round')
+#stop saving as PDF
+dev.off()
+```
+
+Then we can add a data frame and a loop, to run the code for each entry.
+
+```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
+#setup variable with list of origins
+  origins <- c("Leeds station, New Station Street, Leeds LS1 5DL","Leeds","Manchester",
+               "Manchester Oxford Road")
+  destinations <- c("LS2 9JT","Manchester","Liverpool","Manchester Picadilly")
+  map_center <- c("Merrion Centre","Marsden, UK","Warrington","Sackville St, Manchester")
+  zoom_level <- c(15,10,10,16)
+#combine origins and destinations to create a data frame
+  df_orig_dest <- data.frame(origins,destinations,map_center,zoom_level)
+#loop through for each map
+for (i in 1:length(df_orig_dest)) {
+  #setup file name
+  filename <- paste0("route_",df_orig_dest[i,1],"_to_",df_orig_dest[i,2],".pdf") 
+  #save as PDF and set file name
+  pdf(file=filename)
+    from <- as.character(df_orig_dest[i,1]) #check whether this is needed
+    to <- as.character(df_orig_dest[i,2])
+    route_df <- route(from, to, structure = 'route', mode = 'walking')
+    print(qmap(as.character(df_orig_dest[i,3]), zoom = df_orig_dest[i,4]) +
+      geom_path(
+        aes(x = lon, y = lat),  colour = 'red', size = 1.5,
+        data = route_df, lineend = 'round'))
+  #stop saving as PDF
+  dev.off()
+#end loop
+}
+```
+
+Try experimenting with different parts of the code, to, for example, change the colour for each route, or add more entries. You can also save the maps as images - for example, type `?jpeg` into the console to see how to get the map as a JPEG. 
