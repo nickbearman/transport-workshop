@@ -145,7 +145,7 @@ library(sp) # enables spatial data classes
 library(devtools) # to install packages from github
 install_github("robinlovelace/stplanr") # install the package
 library(stplanr)
-cckey <- "79769a3a2d2a0cae" # add your API key - will be vary
+cckey <- "79769a3a2d2a0cae" # add your API key - you need to apply
 ```
 
 ```{r, include=FALSE}
