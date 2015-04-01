@@ -145,14 +145,12 @@ library(sp) # enables spatial data classes
 library(devtools) # to install packages from github
 install_github("robinlovelace/stplanr") # install the package
 library(stplanr)
-cckey <- "f3fe3d078ac34999" # add your API key - will be vary
+cckey <- "79769a3a2d2a0caf" # add your API key - will be vary
 ```
 
 ```{r, include=FALSE}
 library(sp) # enables spatial data classes
 library(stplanr)
-# cckey <- readLines("~/Dropbox/dotfiles/cyclestreets-api-key-rl") 
-cckey <- Sys.getenv('CYCLESTREET') # if you've saved it to your system
 ```
 
 ## Convert the OD matix into straight lines
