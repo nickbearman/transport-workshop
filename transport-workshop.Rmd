@@ -121,6 +121,27 @@ for (i in 1:length(df_orig_dest)) {
 
 Try experimenting with different parts of the code, to, for example, change the colour for each route, or add more entries. You can also save the maps as images - for example, type `?jpeg` into the console to see how to get the map as a JPEG. 
 
+
+# Route Analysis
+
+We have plotted a few maps now, but we can also do some analysis of the data as well. The variable `route_df` contains various pieces of information about the route we have plotted. Run `head(route_df)` to see the first six rows of this variable. The output may be slightly different if you have been experimenting with different routes. 
+
+```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
+head(route_df)
+```
+
+We can add up the values from specific columns, using `colSums` to extract the total distance or time, for example.
+
+```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
+colSums(route_df, na.rm = TRUE)
+```
+
+Some of these values are just giberish and mean nothing (e.g. `lat` and `lon`) but others are quite useful - total time or distance, for example. Distance is particually useful, and is one that I used in my Home to School travel work.
+
+# Critique of results from Google service
+
+*(to be completed)*
+
 # Routing with CycleStreets.net
 
 The routes from Google are useful, containing data on distance and time for
@@ -145,7 +166,12 @@ library(sp) # enables spatial data classes
 library(devtools) # to install packages from github
 install_github("robinlovelace/stplanr") # install the package
 library(stplanr)
-cckey <- "79769a3a2d2a0cae" # add your API key - you need to apply
+```
+
+*Details on key requirement to be checked*
+
+```{r}
+cckey l;<- "79769a3a2d2a0caf" # add your API key - you need to apply
 ```
 
 ```{r, include=FALSE}
@@ -153,26 +179,33 @@ library(sp) # enables spatial data classes
 library(stplanr)
 ```
 
-## Convert the OD matix into straight lines
+## Convert the origin destination matix into straight lines
 
 To convert the text string origins and destinations into routes, we first
 must convert them into objects of the `SpatialLinesDataFrame` data class:
 
 ```{r, message=FALSE}
+#extract the attribute data
 f <- df_orig_dest[-3,]
+#set up coordinates
 coords <- geocode(c(origins, destinations))
+#create SpatialLinesDataFrame
 cents <- SpatialPointsDataFrame(coords = as.matrix(coords),
   data = data.frame(code = c(origins, destinations)))
 rlines <- gFlow2line(flow = f, zones = cents)
+#plot
 plot(rlines, col = c("green", "red", "blue", "black"))
 ```
 
 We have successfully saved our 'desire lines'. Now let's convert them
 to navigable cycle routes and plot them:
 
-```{r}
+```{r, eval = FALSE}
 rquiet <- gLines2CyclePath(l = rlines, plan = "quietest")
 plot(rquiet[1,]) # route from Leeds station to Leeds University (North - South)
 plot(rquiet[2,]) # route from Leeds to Manchester!
 ```
 
+#### References:  
+  
+D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
