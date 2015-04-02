@@ -8,7 +8,7 @@ Open up R Studio (click **Start > All Programs > RStudio > RStudio** or double-c
 One of the libraries we will use is `ggmap`, which allows us to quickly and easily include some Google Maps within R. First, we need to load the library, so type into the console:
 
 ```{r, comment=NA, message=FALSE, warning=FALSE}
-library(ggmap)
+library(ggmap) # use install.packages("ggmap") if not already installed
 ```
 
 This will also load various other libraries and you will probably see information messages. We can then create a quick map of Leeds with the `qmap()` function. You should see the map appear in the 'Plots' window to the left of the R Studio window. 
@@ -107,4 +107,72 @@ for (i in 1:length(df_orig_dest)) {
 }
 ```
 
+```{r, echo=FALSE}
+# Setup data for next section
+  origins <- c("Leeds station, New Station Street, Leeds LS1 5DL","Leeds","Manchester",
+               "Manchester Oxford Road")
+  destinations <- c("LS2 9JT","Manchester","Liverpool","Manchester Picadilly")
+  map_center <- c("Merrion Centre","Marsden, UK","Warrington","Sackville St, Manchester")
+  zoom_level <- c(15,10,10,16)
+#combine origins and destinations to create a data frame
+  df_orig_dest <- data.frame(origins,destinations,map_center,zoom_level)
+```
+
+
 Try experimenting with different parts of the code, to, for example, change the colour for each route, or add more entries. You can also save the maps as images - for example, type `?jpeg` into the console to see how to get the map as a JPEG. 
+
+# Routing with CycleStreets.net
+
+The routes from Google are useful, containing data on distance and time for
+different modes of transport. However, they are limited: we are only given
+some of the route, which is not allocated to the route network, only containing
+nodes where the route diverges.
+
+To overcome this problem, we can use alternative route finding services such as
+https://graphhopper.com/ and http://project-osrm.org/. CycleStreets.net is a
+routing service designed by cyclists for cyclists that we will use to illustrate
+routing using other external services in R. It has various advantages over the
+`route()` function described above but you need a CycleStreets.net 'API key'
+for it to work. Apply here: http://www.cyclestreets.net/api/ .
+
+For a project funded by
+the UK's Department for Transport (DfT), an R interface to the CycleStreets.net
+routing service has been created. This is included in the R package
+**stplanr**. Let's download this package to reproduce the routes using CycleStreet.net.
+
+```{r, eval=FALSE}
+library(sp) # enables spatial data classes
+library(devtools) # to install packages from github
+install_github("robinlovelace/stplanr") # install the package
+library(stplanr)
+cckey <- "79769a3a2d2a0cae" # add your API key - you need to apply
+```
+
+```{r, include=FALSE}
+library(sp) # enables spatial data classes
+library(stplanr)
+```
+
+## Convert the OD matix into straight lines
+
+To convert the text string origins and destinations into routes, we first
+must convert them into objects of the `SpatialLinesDataFrame` data class:
+
+```{r, message=FALSE}
+f <- df_orig_dest[-3,]
+coords <- geocode(c(origins, destinations))
+cents <- SpatialPointsDataFrame(coords = as.matrix(coords),
+  data = data.frame(code = c(origins, destinations)))
+rlines <- gFlow2line(flow = f, zones = cents)
+plot(rlines, col = c("green", "red", "blue", "black"))
+```
+
+We have successfully saved our 'desire lines'. Now let's convert them
+to navigable cycle routes and plot them:
+
+```{r}
+rquiet <- gLines2CyclePath(l = rlines, plan = "quietest")
+plot(rquiet[1,]) # route from Leeds station to Leeds University (North - South)
+plot(rquiet[2,]) # route from Leeds to Manchester!
+```
+
