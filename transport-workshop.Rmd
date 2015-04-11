@@ -37,7 +37,7 @@ First, we need to load the library, so type into the console:
 library(ggmap) # use install.packages("ggmap") if not already installed
 ```
 
-This will also load various other libraries and you will probably see information messages. We can then create a quick map of Leeds with the `qmap()` function. You should see the map appear in the 'Plots' window to the left of the R Studio window. 
+This will also load various other libraries and you will probably see information messages. We can then create a quick map of Leeds with the `qmap()` function. You should see the map appear in the 'Plots' window to the right of the R Studio window. 
 
 ```{r, comment=NA, message = FALSE}
 qmap('Leeds')
@@ -150,16 +150,16 @@ Try experimenting with different parts of the code, to, for example, change the 
 We have plotted a few maps now, but we can also do some analysis of the data as well. The variable `route_df` contains various pieces of information about the route we have plotted. Run `head(route_df)` to see the first six rows of this variable. The output may be slightly different if you have been experimenting with different routes. 
 
 ```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
-head(route_df)
+head(route_df) #show the first six rows of route_df
 ```
 
 We can add up the values from specific columns, using `colSums` to extract the total distance or time, for example.
 
 ```{r, comment = NA, message = FALSE, warning=FALSE, eval=FALSE}
-colSums(route_df, na.rm = TRUE)
+colSums(route_df, na.rm = TRUE) #calc sum for each column, omitting missing values
 ```
 
-Some of these values are just giberish and mean nothing (e.g. `lat` and `lon`) but others are quite useful - total time or distance, for example. Distance is particually useful, and is one that I used in my Home to School travel work.
+Some of these values are just gibberish and mean nothing (e.g. `lat` and `lon`) but others are quite useful - total time or distance, for example. Distance is particularly useful, and is one that I used in my Home to School travel work.
 
 Routes produced by Google Maps are useful, provide accurate indications
 of route distance and reasonable estimates of times. You can even specify
@@ -187,11 +187,9 @@ routing service has been created. This is included in the R package
 ```{r, eval=FALSE}
 library(sp) # enables spatial data classes
 library(devtools) # to install packages from github
-install_github("robinlovelace/stplanr") # install the package
+install_github("robinlovelace/stplanr") # install the stplanr package
 library(stplanr)
 ```
-
-*Details on key requirement to be checked*
 
 ```{r}
 cckey <- "79769a3a2d2a0caf" # add your API key 
@@ -202,7 +200,7 @@ library(sp) # enables spatial data classes
 library(stplanr)
 ```
 
-## Convert the origin destination matix into straight lines
+## Convert the origin destination matrix into straight lines
 
 To convert the text string origins and destinations into routes, we first
 must convert them into objects of the `SpatialLinesDataFrame` data class:
@@ -216,7 +214,7 @@ coords <- geocode(c(origins, destinations))
 cents <- SpatialPointsDataFrame(coords = as.matrix(coords),
   data = data.frame(code = c(origins, destinations)))
 rlines <- gFlow2line(flow = f, zones = cents)
-# Plot - uncomment to see result
+# Plot - uncomment to see result (delete the #)
 # plot(rlines[1,], col = c("green", "red", "blue", "black"))
 ```
 
@@ -250,8 +248,15 @@ your 'journey' in R for transport applications by checking out
 the references listed below. 
 
 # References
-  
-D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL: http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+
+Bearman, N. (2015). Introduction to Using R for Spatial Analysis. Retrieved from http://www.nickbearman.me.uk/2015/01/introduction-to-using-r-for-spatial-analysis/
+
+Kahle, D. and Wickham, H. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL: http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
 
 Lovelace, R., & Cheshire, J. (2014). Introduction to visualising spatial data in R. National Centre for Research Methods Working Papers, 14(03). Retrieved from https://github.com/Robinlovelace/Creating-maps-in-R
+
+
+# Further Information
+
+This PDF was created on 11th April 2015 by Nick Bearman and Robin Lovelace for GIS for Transport Applications workshop (https://github.com/Robinlovelace/GIS4TA) at GISRUK 2015. It is available at https://github.com/nickbearman/transport-workshop. 
 
