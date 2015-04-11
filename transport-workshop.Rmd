@@ -3,9 +3,35 @@ title: "Route Analysis using R and Google Maps"
 output: pdf_document
 ---
 
+# Setup
+
 Open up R Studio (click **Start > All Programs > RStudio > RStudio** or double-click the icon on the desktop). 
 
-One of the libraries we will use is `ggmap`, which allows us to quickly and easily include some Google Maps within R. First, we need to load the library, so type into the console:
+You don't need any data to run this tutorial - we generate it all
+online. However, it is good practice to set-up a new project
+for our R routing experiments. Do this in RStudio now (if you're new to
+RStudio, take a look around and you'll soon see how).
+
+All but one of the libraries (**stplanr**)
+we will use in this package can be downloaded
+from CRAN, R's online store of packages.
+
+- **ggmap**: a package for plotting geographical data
+- **sp**: a package defining spatial objects in R
+- **devtools**: a package we'll use to install **stplanr**!
+
+All the packages can be installed
+by clicking **Tools > Install Packages**. Alternatively you
+can install these packages with the following commands:
+
+```{r, eval=FALSE}
+pkgs <- c("ggmap", "sp", "devtools") # create an object for the packages
+install.packages(pkgs) # install the packages - requires the internet
+```
+
+**ggmap** allows for quick and easy map creation and an
+interface to Google Maps within R. 
+First, we need to load the library, so type into the console:
 
 ```{r, comment=NA, message=FALSE, warning=FALSE}
 library(ggmap) # use install.packages("ggmap") if not already installed
@@ -25,7 +51,7 @@ qmap('L69 3BX')
 
 Try different postcodes or locations to search for, and see what happens. You will see that the scale of the map stays the same - this is fine for Leeds, but of limited use for somewhere smaller (like Norwich) or larger (like Ireland). The default zoom is level 10, but we can change this to something more useful. Higher numbers zoom in more (i.e. show a smaller area). Try:
 
-```{r, comment=NA, message = FALSE}
+```{r, comment=NA, message = FALSE, eval=FALSE}
 qmap('LS2 9JT', zoom = 17)
 ```
 
@@ -43,8 +69,7 @@ One useful shortcut when using R Studio (or R on its own) is that pressing the '
 qmap('LS2 9JT', zoom = 17, maptype = 'hybrid')
 ```
 
-
-## Routing
+# Routing
 
 Just as you can get directions from the Google Maps website, you can also access the same tools through the API. The code below passes an origin and destination to the routing command and then shows the route on a map. Try running this code, and then try changing to origin and/or destination and try running it again. You may need to adjust the location of the map to show the whole route. 
 
@@ -107,6 +132,8 @@ for (i in 1:length(df_orig_dest)) {
 }
 ```
 
+Try experimenting with different parts of the code, to, for example, change the colour for each route, or add more entries. You can also save the maps as images - for example, type `?jpeg` into the console to see how to get the map as a JPEG. 
+
 ```{r, echo=FALSE}
 # Setup data for next section
   origins <- c("Leeds station, New Station Street, Leeds LS1 5DL","Leeds","Manchester",
@@ -117,10 +144,6 @@ for (i in 1:length(df_orig_dest)) {
 #combine origins and destinations to create a data frame
   df_orig_dest <- data.frame(origins,destinations,map_center,zoom_level)
 ```
-
-
-Try experimenting with different parts of the code, to, for example, change the colour for each route, or add more entries. You can also save the maps as images - for example, type `?jpeg` into the console to see how to get the map as a JPEG. 
-
 
 # Route Analysis
 
@@ -138,23 +161,23 @@ colSums(route_df, na.rm = TRUE)
 
 Some of these values are just giberish and mean nothing (e.g. `lat` and `lon`) but others are quite useful - total time or distance, for example. Distance is particually useful, and is one that I used in my Home to School travel work.
 
-# Critique of results from Google service
-
-*(to be completed)*
+Routes produced by Google Maps are useful, provide accurate indications
+of route distance and reasonable estimates of times. You can even specify
+what mode of transport through the *argument* `mode`. 
+(See what happens when you add `, mode = "bicycling"`: `walking` and
+`driving` are the alternatives.)
+However, the plotted routes do not follow the travel network, simply
+snapping to key *nodes* where the road changes. 
 
 # Routing with CycleStreets.net
 
-The routes from Google are useful, containing data on distance and time for
-different modes of transport. However, they are limited: we are only given
-some of the route, which is not allocated to the route network, only containing
-nodes where the route diverges.
-
-To overcome this problem, we can use alternative route finding services such as
-https://graphhopper.com/ and http://project-osrm.org/. CycleStreets.net is a
-routing service designed by cyclists for cyclists that we will use to illustrate
+To overcome this problem, we can use alternative route finding services such as [graphhopper](https://graphhopper.com/) and
+[osrm](http://project-osrm.org/). [CycleStreets](http://www.cyclestreets.net/) 
+is a routing service designed by cyclists for cyclists that we will use to illustrate
 routing using other external services in R. It has various advantages over the
-`route()` function described above but you need a CycleStreets.net 'API key'
-for it to work. Apply here: http://www.cyclestreets.net/api/ .
+`route()` function (and some disadvantages) described above.
+You need a CycleStreets.net 'API key'
+for it to work.
 
 For a project funded by
 the UK's Department for Transport (DfT), an R interface to the CycleStreets.net
@@ -171,7 +194,7 @@ library(stplanr)
 *Details on key requirement to be checked*
 
 ```{r}
-cckey l;<- "79769a3a2d2a0caf" # add your API key - you need to apply
+cckey <- "79769a3a2d2a0caf" # add your API key 
 ```
 
 ```{r, include=FALSE}
@@ -185,16 +208,16 @@ To convert the text string origins and destinations into routes, we first
 must convert them into objects of the `SpatialLinesDataFrame` data class:
 
 ```{r, message=FALSE}
-#extract the attribute data
+# Extract the attribute data
 f <- df_orig_dest[-3,]
-#set up coordinates
+# Set up coordinates
 coords <- geocode(c(origins, destinations))
-#create SpatialLinesDataFrame
+# Create SpatialLinesDataFrame
 cents <- SpatialPointsDataFrame(coords = as.matrix(coords),
   data = data.frame(code = c(origins, destinations)))
 rlines <- gFlow2line(flow = f, zones = cents)
-#plot
-plot(rlines, col = c("green", "red", "blue", "black"))
+# Plot - uncomment to see result
+# plot(rlines[1,], col = c("green", "red", "blue", "black"))
 ```
 
 We have successfully saved our 'desire lines'. Now let's convert them
@@ -206,6 +229,29 @@ plot(rquiet[1,]) # route from Leeds station to Leeds University (North - South)
 plot(rquiet[2,]) # route from Leeds to Manchester!
 ```
 
-#### References:  
+```{r, echo=FALSE}
+# save(rquiet, file = "rquiet.RData")
+load("rquiet.RData")
+```
+
+To see the quietest cycling route from Manchester to Leeds we can
+combine our **ggplot** skills with the new R object using fortify:
+
+```{r}
+rquiet_f <- fortify(rquiet)
+bb <- make_bbox(lon = long, lat = lat, data = rquiet_f)
+m1 <- ggmap(ggmap = get_map(location = bb)) 
+m1 + geom_path(aes(x = long, y = lat, group = group), data = rquiet_f)
+```
+
+If you don't understand all the steps used in the above code block
+do not despair: very few people do! All we can recommend is you continue
+your 'journey' in R for transport applications by checking out
+the references listed below. 
+
+# References
   
-D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+D. Kahle and H. Wickham. ggmap: Spatial Visualization with ggplot2. The R Journal, 5(1), 144-161. URL: http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+
+Lovelace, R., & Cheshire, J. (2014). Introduction to visualising spatial data in R. National Centre for Research Methods Working Papers, 14(03). Retrieved from https://github.com/Robinlovelace/Creating-maps-in-R
+
