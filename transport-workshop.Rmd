@@ -46,7 +46,7 @@ qmap('Leeds')
 We can also search for anything we would search for in the Google Maps search box - e.g. different locations, or postcodes. For example, try: 
 
 ```{r, comment=NA, message = FALSE, eval=FALSE}
-qmap('L69 3BX')
+qmap('LS2 9JT')
 ```
 
 Try different postcodes or locations to search for, and see what happens. You will see that the scale of the map stays the same - this is fine for Leeds, but of limited use for somewhere smaller (like Norwich) or larger (like Ireland). The default zoom is level 10, but we can change this to something more useful. Higher numbers zoom in more (i.e. show a smaller area). Try:
